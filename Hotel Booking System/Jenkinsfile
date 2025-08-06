@@ -1,0 +1,61 @@
+pipeline {
+    agent any
+
+    tools {
+        jdk 'Java 17'
+        maven 'Maven 3.6'
+    }
+
+    environment {
+        AZURE_WEBAPP_NAME = 'hotel-booking-chatbot'
+        AZURE_RG = 'hotel-booking-rg'
+        AZURE_SUBSCRIPTION_ID = 'your-subscription-id'
+        JAVA_OPTS = '-Xmx1024m'
+    }
+
+    stages {
+        stage('Checkout') {
+            steps {
+                git 'https://github.com/rajlaxmicts/hotel-booking-system-v2.git'
+            }
+        }
+
+        stage('Build') {
+            steps {
+                sh 'mvn clean install'
+            }
+        }
+
+        stage('Test') {
+            steps {
+                sh 'mvn test'
+            }
+        }
+
+        stage('Package') {
+            steps {
+                sh 'mvn package'
+            }
+        }
+
+        stage('Deploy to Azure') {
+            steps {
+                withCredentials([azureServicePrincipal('AZURE_CREDENTIALS')]) {
+                    sh '''
+                        az login --service-principal -u $AZURE_CLIENT_ID -p $AZURE_CLIENT_SECRET --tenant $AZURE_TENANT_ID
+                        az webapp deploy --name $AZURE_WEBAPP_NAME --resource-group $AZURE_RG --src-path target/*.jar
+                    '''
+                }
+            }
+        }
+    }
+
+    post {
+        success {
+            echo '✅ Hotel Booking System deployed successfully!'
+        }
+        failure {
+            echo '❌ Deployment failed. Please check the logs.'
+        }
+    }
+}
