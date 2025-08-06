@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Home Page Button Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .test-section { margin: 20px 0; padding: 20px; border: 2px solid #ddd; border-radius: 8px; }
+        .test-button { display: inline-block; margin: 5px; padding: 10px 20px; background: #007bff; color: white; text-decoration: none; border-radius: 5px; }
+        .test-button.register { background: #28a745; }
+        .success { background: #d4edda; color: #155724; padding: 15px; border-radius: 5px; }
+        .error { background: #f8d7da; color: #721c24; padding: 15px; border-radius: 5px; }
+        .info { background: #d1ecf1; color: #0c5460; padding: 15px; border-radius: 5px; }
+    </style>
+</head>
+<body>
+    <h1>🏠 Home Page Register Button Test</h1>
+    
+    <div class="info">
+        <h3>🔍 Testing Register Button Visibility</h3>
+        <p>This page will help you verify that the register button appears on the home page.</p>
+    </div>
+    
+    <div class="test-section">
+        <h3>Step 1: Check Home Page Directly</h3>
+        <p>Click this button to open the home page:</p>
+        <a href="http://localhost:8081" class="test-button" target="_blank">Open Home Page</a>
+        
+        <p><strong>What you should see on the home page:</strong></p>
+        <ul>
+            <li>✅ Navigation bar with "Login" and "Register" links</li>
+            <li>✅ Hero section with "Login" and "Create Account" buttons</li>
+            <li>✅ Large, prominent buttons below the main description</li>
+        </ul>
+    </div>
+    
+    <div class="test-section">
+        <h3>Step 2: Direct Registration Access</h3>
+        <p>If you don't see the register button, you can access registration directly:</p>
+        <a href="http://localhost:8081/register" class="test-button register" target="_blank">Go Directly to Register</a>
+        <a href="http://localhost:8081/login" class="test-button" target="_blank">Go Directly to Login</a>
+    </div>
+    
+    <div class="test-section">
+        <h3>Step 3: Debug Information</h3>
+        <p>Open your browser's developer tools (F12) and check the console for debug messages.</p>
+        <p>You should see messages like:</p>
+        <ul>
+            <li>"Updating auth UI, logged in: false"</li>
+            <li>"User is not logged in, showing auth buttons"</li>
+        </ul>
+    </div>
+    
+    <div class="test-section">
+        <h3>🛠️ Troubleshooting</h3>
+        
+        <h4>If you still don't see the register button:</h4>
+        <ol>
+            <li><strong>Clear Browser Cache:</strong> Press Ctrl+F5 to hard refresh</li>
+            <li><strong>Check JavaScript Console:</strong> Look for any error messages</li>
+            <li><strong>Verify Application is Running:</strong> Make sure you can access the home page</li>
+            <li><strong>Try Incognito Mode:</strong> Open in a private/incognito browser window</li>
+        </ol>
+        
+        <h4>Expected Button Locations:</h4>
+        <ul>
+            <li><strong>Navigation Bar:</strong> Top right corner - "Login" and "Register" links</li>
+            <li><strong>Hero Section:</strong> Below the main description - large "Login" and "Create Account" buttons</li>
+        </ul>
+    </div>
+    
+    <div class="success">
+        <h3>✅ What I Fixed</h3>
+        <ul>
+            <li>Made auth buttons visible by default with <code>style="display: block;"</code></li>
+            <li>Increased button size to <code>btn-lg</code> for better visibility</li>
+            <li>Used <code>btn-outline-light</code> for better contrast on dark background</li>
+            <li>Added debug logging to track authentication state</li>
+            <li>Ensured navigation links are visible by removing hidden styles</li>
+        </ul>
+    </div>
+    
+    <script>
+        // Test if the application is running
+        window.addEventListener('load', async function() {
+            const statusDiv = document.createElement('div');
+            statusDiv.style.position = 'fixed';
+            statusDiv.style.top = '10px';
+            statusDiv.style.right = '10px';
+            statusDiv.style.padding = '10px';
+            statusDiv.style.borderRadius = '5px';
+            statusDiv.style.zIndex = '9999';
+            
+            try {
+                const response = await fetch('http://localhost:8081');
+                if (response.ok) {
+                    statusDiv.className = 'success';
+                    statusDiv.innerHTML = '✅ Application Running';
+                } else {
+                    statusDiv.className = 'error';
+                    statusDiv.innerHTML = '❌ Application Error';
+                }
+            } catch (error) {
+                statusDiv.className = 'error';
+                statusDiv.innerHTML = '❌ Application Not Running<br><small>Start with START_APP.bat</small>';
+            }
+            
+            document.body.appendChild(statusDiv);
+            
+            // Auto-remove after 5 seconds
+            setTimeout(() => statusDiv.remove(), 5000);
+        });
+    </script>
+</body>
+</html>

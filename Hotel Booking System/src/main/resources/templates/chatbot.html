@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chatbot - Hotel Booking System</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="/css/style.css" rel="stylesheet">
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <div class="container">
+            <a class="navbar-brand fw-bold" href="/">
+                <i class="fas fa-hotel me-2"></i>Hotel Booking System
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="/">Home</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/hotels-page">Hotels</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/bookings-page">Bookings</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" href="/chatbot">Chatbot</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container py-5">
+        <div class="row justify-content-center">
+            <div class="col-lg-8">
+                <div class="card shadow-lg">
+                    <div class="card-header bg-primary text-white">
+                        <h4 class="mb-0">
+                            <i class="fas fa-robot me-2"></i>Hotel Booking Assistant
+                            <span class="badge bg-success ms-2">Online</span>
+                        </h4>
+                        <small>Ask me anything about hotels, bookings, or cancellations!</small>
+                    </div>
+                    <div class="card-body p-0">
+                        <div id="chat-container" class="chat-container">
+                            <div class="chat-message bot-message">
+                                <div class="message-content">
+                                    <i class="fas fa-robot me-2"></i>
+                                    Hello! I'm your hotel booking assistant. I can help you:
+                                    <ul class="mb-0 mt-2">
+                                        <li>Search for hotels by location, price, or rating</li>
+                                        <li>Check your existing bookings</li>
+                                        <li>Cancel reservations</li>
+                                        <li>Answer questions about our services</li>
+                                    </ul>
+                                    Try asking me: "Find hotels in Paris" or "My bookings for john@email.com"
+                                </div>
+                                <div class="message-time">Just now</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-footer">
+                        <div class="input-group">
+                            <input type="text" id="chat-input" class="form-control" 
+                                   placeholder="Type your message here..." 
+                                   onkeypress="handleKeyPress(event)">
+                            <button class="btn btn-primary" id="send-btn" onclick="sendMessage()">
+                                <i class="fas fa-paper-plane"></i>
+                            </button>
+                        </div>
+                        <div class="mt-2">
+                            <small class="text-muted">
+                                <i class="fas fa-lightbulb me-1"></i>
+                                Quick suggestions: 
+                                <span class="suggestion-chip" onclick="sendSuggestion('Find hotels in London')">Find hotels in London</span>
+                                <span class="suggestion-chip" onclick="sendSuggestion('Hotels under $200')">Hotels under $200</span>
+                                <span class="suggestion-chip" onclick="sendSuggestion('Help')">Help</span>
+                            </small>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Quick Actions -->
+                <div class="row mt-4">
+                    <div class="col-md-4">
+                        <div class="card border-primary">
+                            <div class="card-body text-center">
+                                <i class="fas fa-search text-primary fs-2 mb-2"></i>
+                                <h6>Search Hotels</h6>
+                                <button class="btn btn-outline-primary btn-sm" 
+                                        onclick="sendSuggestion('Find available hotels')">
+                                    Quick Search
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="card border-success">
+                            <div class="card-body text-center">
+                                <i class="fas fa-calendar text-success fs-2 mb-2"></i>
+                                <h6>Check Bookings</h6>
+                                <button class="btn btn-outline-success btn-sm" 
+                                        onclick="promptForEmail()">
+                                    My Bookings
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="card border-info">
+                            <div class="card-body text-center">
+                                <i class="fas fa-question-circle text-info fs-2 mb-2"></i>
+                                <h6>Get Help</h6>
+                                <button class="btn btn-outline-info btn-sm" 
+                                        onclick="sendSuggestion('What can you do?')">
+                                    Show Help
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="/js/chatbot.js"></script>
+</body>
+</html>

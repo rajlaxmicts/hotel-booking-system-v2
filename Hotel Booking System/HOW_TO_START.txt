@@ -1,0 +1,57 @@
+🚀 HOW TO START THE HOTEL BOOKING SYSTEM
+========================================
+
+OPTION 1: Double-click one of these files
+-----------------------------------------
+✅ LAUNCH.bat         (Recommended - works on all Windows)
+✅ LAUNCH.ps1         (PowerShell version - more colorful output)
+✅ START_APP.bat      (Original version)
+
+OPTION 2: Manual command line
+-----------------------------
+1. Open Command Prompt (Win+R, type "cmd")
+2. Navigate to project folder:
+   cd "c:\Users\162349\Rajlaxmi\Rajlaxmi_Latest\IHG\Vibe Coding\Hotel Booking System"
+3. Run: mvn spring-boot:run
+
+OPTION 3: PowerShell
+--------------------
+1. Open PowerShell (Win+X, select "Windows PowerShell")
+2. Navigate to project folder:
+   Set-Location "c:\Users\162349\Rajlaxmi\Rajlaxmi_Latest\IHG\Vibe Coding\Hotel Booking System"
+3. Run: .\LAUNCH.ps1
+
+WHAT TO EXPECT
+--------------
+✅ Application will download dependencies (first run may take longer)
+✅ You'll see "Tomcat started on port(s): 8081"
+✅ Test users will be created automatically
+✅ Browser can access http://localhost:8081
+
+REGISTER BUTTON LOCATIONS
+-------------------------
+Once the app is running, go to http://localhost:8081 and look for:
+
+1. Navigation Bar (top right):
+   "Login" and "Register" links
+
+2. Hero Section (main content):
+   "Login" and "Create Account" buttons
+
+3. Fallback Section (below hero):
+   "Join Now - Free Registration" button
+
+TEST ACCOUNTS
+-------------
+admin / admin123
+user / user123
+demo / demo123
+
+TROUBLESHOOTING
+---------------
+❌ "Java not found" → Install Java 17+
+❌ "Maven not found" → Install Maven 3.6+
+❌ Port 8081 busy → Stop other applications using port 8081
+❌ Can't see register button → Clear browser cache (Ctrl+F5)
+
+🎯 QUICK START: Just double-click LAUNCH.bat!

@@ -1,0 +1,37 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        
+        {
+            "type": "java",
+            "name": "Debug (Attach)",
+            "request": "attach",
+            "hostName": "localhost",
+            "port": 5005
+        },
+        {
+            "type": "java",
+            "name": "Debug Spring Boot App",
+            "request": "launch",
+            "mainClass": "com.ihg.hotelbooking.HotelBookingChatbotApplication",
+            "projectName": "hotel-booking-chatbot",
+            "args": "",
+            "envFile": "${workspaceFolder}/.env",
+            "vmArgs": "-Dspring.profiles.active=debug",
+            "console": "internalConsole",
+            "stopOnEntry": false,
+            "cwd": "${workspaceFolder}",
+            "env": {
+                "SPRING_PROFILES_ACTIVE": "debug"
+            }
+        },
+        {
+            "type": "java",
+            "name": "Debug Tests",
+            "request": "launch",
+            "mainClass": "",
+            "projectName": "hotel-booking-chatbot",
+            "preLaunchTask": "test-compile"
+        }
+    ]
+}

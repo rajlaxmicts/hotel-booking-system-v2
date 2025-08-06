@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Network Troubleshooting - Hotel Booking System</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; background-color: #f5f5f5; }
+        .container { max-width: 800px; margin: 0 auto; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        .status { padding: 15px; margin: 10px 0; border-radius: 5px; }
+        .success { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+        .error { background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+        .warning { background: #fff3cd; color: #856404; border: 1px solid #ffeaa7; }
+        .info { background: #d1ecf1; color: #0c5460; border: 1px solid #bee5eb; }
+        button { padding: 10px 15px; margin: 5px; background: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer; }
+        button:hover { background: #0056b3; }
+        .step { margin: 15px 0; padding: 15px; background: #f8f9fa; border-left: 4px solid #007bff; }
+        .code { background: #f1f3f4; padding: 10px; border-radius: 4px; font-family: monospace; margin: 10px 0; }
+        .check-item { margin: 10px 0; padding: 10px; border: 1px solid #ddd; border-radius: 4px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔍 Network Troubleshooting Guide</h1>
+        
+        <div id="overall-status" class="status warning">
+            <h3>🔄 Checking application status...</h3>
+        </div>
+
+        <div class="step">
+            <h3>Step 1: Check if Application is Running</h3>
+            <button onclick="checkApplicationStatus()">🔍 Check Application Status</button>
+            <button onclick="checkPort()">🌐 Check Port 8081</button>
+            <div id="app-status-result"></div>
+        </div>
+
+        <div class="step">
+            <h3>Step 2: Test API Endpoints</h3>
+            <button onclick="testLoginEndpoint()">🔐 Test Login Endpoint</button>
+            <button onclick="testHotelsEndpoint()">🏨 Test Hotels Endpoint</button>
+            <div id="api-test-result"></div>
+        </div>
+
+        <div class="step">
+            <h3>Step 3: Common Solutions</h3>
+            
+            <div class="check-item">
+                <h4>✅ Start the Application</h4>
+                <p>Run one of these commands in the project directory:</p>
+                <div class="code">start-simple.bat</div>
+                <div class="code">mvn spring-boot:run</div>
+            </div>
+
+            <div class="check-item">
+                <h4>🔄 Check for Port Conflicts</h4>
+                <p>If port 8081 is busy, find what's using it:</p>
+                <div class="code">netstat -ano | findstr :8081</div>
+                <p>Kill the process if needed, or change the port in application.properties</p>
+            </div>
+
+            <div class="check-item">
+                <h4>🛠️ Clear and Rebuild</h4>
+                <div class="code">mvn clean<br>mvn compile<br>mvn spring-boot:run</div>
+            </div>
+
+            <div class="check-item">
+                <h4>🔥 Check Firewall/Antivirus</h4>
+                <p>Temporarily disable firewall/antivirus to test if they're blocking localhost:8081</p>
+            </div>
+        </div>
+
+        <div class="step">
+            <h3>Step 4: Manual Verification</h3>
+            <p>Once the application is running, you should see:</p>
+            <ul>
+                <li>Console output: "Tomcat started on port(s): 8081"</li>
+                <li>User creation messages: "✅ Admin user created - Username: admin, Password: admin123"</li>
+                <li>This page should show all green checkmarks ✅</li>
+            </ul>
+        </div>
+
+        <div class="info">
+            <h3>📋 Quick Reference</h3>
+            <ul>
+                <li><strong>Application URL:</strong> http://localhost:8081</li>
+                <li><strong>Login Page:</strong> http://localhost:8081/login</li>
+                <li><strong>H2 Console:</strong> http://localhost:8081/h2-console</li>
+                <li><strong>Test Credentials:</strong> admin/admin123, user/user123, demo/demo123</li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        // Check application status on page load
+        window.addEventListener('load', function() {
+            setTimeout(checkApplicationStatus, 1000);
+        });
+
+        async function checkApplicationStatus() {
+            const statusDiv = document.getElementById('overall-status');
+            const resultDiv = document.getElementById('app-status-result');
+            
+            statusDiv.innerHTML = '<h3>🔄 Checking application status...</h3>';
+            
+            try {
+                // Test multiple endpoints to verify the application is fully running
+                const tests = [
+                    { url: '/', name: 'Home Page' },
+                    { url: '/api/auth/login', name: 'Auth API', method: 'POST' },
+                    { url: '/api/hotels', name: 'Hotels API' }
+                ];
+                
+                let results = [];
+                
+                for (const test of tests) {
+                    try {
+                        const response = await fetch(test.url, {
+                            method: test.method || 'GET',
+                            headers: test.method === 'POST' ? { 'Content-Type': 'application/json' } : {},
+                            body: test.method === 'POST' ? JSON.stringify({}) : undefined
+                        });
+                        
+                        results.push({
+                            name: test.name,
+                            status: response.status,
+                            success: response.status < 500
+                        });
+                    } catch (error) {
+                        results.push({
+                            name: test.name,
+                            status: 'Error',
+                            success: false,
+                            error: error.message
+                        });
+                    }
+                }
+                
+                const allSuccess = results.every(r => r.success);
+                
+                if (allSuccess) {
+                    statusDiv.className = 'status success';
+                    statusDiv.innerHTML = '<h3>✅ Application is running correctly!</h3><p>You can now test the login functionality.</p>';
+                } else {
+                    statusDiv.className = 'status error';
+                    statusDiv.innerHTML = '<h3>❌ Application is not running or has issues</h3><p>Please start the application using the steps below.</p>';
+                }
+                
+                resultDiv.innerHTML = results.map(r => 
+                    `<div class="${r.success ? 'success' : 'error'} status">
+                        <strong>${r.name}:</strong> ${r.status} ${r.error ? '(' + r.error + ')' : ''}
+                    </div>`
+                ).join('');
+                
+            } catch (error) {
+                statusDiv.className = 'status error';
+                statusDiv.innerHTML = '<h3>❌ Cannot connect to application</h3><p>The Spring Boot application is not running.</p>';
+                resultDiv.innerHTML = `<div class="error status">Error: ${error.message}</div>`;
+            }
+        }
+
+        async function checkPort() {
+            const resultDiv = document.getElementById('app-status-result');
+            try {
+                const response = await fetch('http://localhost:8081');
+                resultDiv.innerHTML = '<div class="success status">✅ Port 8081 is responding</div>';
+            } catch (error) {
+                resultDiv.innerHTML = '<div class="error status">❌ Port 8081 is not responding. Application may not be running.</div>';
+            }
+        }
+
+        async function testLoginEndpoint() {
+            const resultDiv = document.getElementById('api-test-result');
+            try {
+                const response = await fetch('/api/auth/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username: 'admin', password: 'admin123' })
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok && data.token) {
+                    resultDiv.innerHTML = '<div class="success status">✅ Login endpoint working! Token received.</div>';
+                } else {
+                    resultDiv.innerHTML = `<div class="warning status">⚠️ Login endpoint responding but login failed: ${data.error || 'Unknown error'}</div>`;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `<div class="error status">❌ Login endpoint not accessible: ${error.message}</div>`;
+            }
+        }
+
+        async function testHotelsEndpoint() {
+            const resultDiv = document.getElementById('api-test-result');
+            try {
+                const response = await fetch('/api/hotels');
+                const data = await response.json();
+                
+                if (response.ok) {
+                    resultDiv.innerHTML = `<div class="success status">✅ Hotels endpoint working! Found ${data.length} hotels.</div>`;
+                } else {
+                    resultDiv.innerHTML = `<div class="error status">❌ Hotels endpoint error: ${response.status}</div>`;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `<div class="error status">❌ Hotels endpoint not accessible: ${error.message}</div>`;
+            }
+        }
+    </script>
+</body>
+</html>
