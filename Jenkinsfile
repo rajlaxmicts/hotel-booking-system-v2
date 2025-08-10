@@ -28,6 +28,7 @@ pipeline {
         stage('Package') {
             steps {
                 sh 'mvn package'
+                sh 'cp target/hotel-booking-chatbot-0.0.1-SNAPSHOT.jar target/hotel-booking-system.jar'
                 archiveArtifacts artifacts: 'target/*.jar', fingerprint: true
             }
         }
