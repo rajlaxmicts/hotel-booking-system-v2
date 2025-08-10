@@ -31,6 +31,17 @@ pipeline {
                 archiveArtifacts artifacts: 'target/*.jar', fingerprint: true
             }
         }
+        stage('Deploy') {
+            steps {
+                echo 'Deploying using Docker...'
+                sh '''
+                docker build -t hotel-booking-app .
+                docker stop hotel-booking-container || true
+                docker rm hotel-booking-container || true
+                docker run -d --name hotel-booking-container -p 8081:8081 hotel-booking-app
+                '''
+            }
+        }
     }
 
     post {
