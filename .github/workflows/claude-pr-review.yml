@@ -9,44 +9,46 @@ permissions:
   contents: read
 
 jobs:
-  review:
+  claude-review:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout repository
+      - name: Checkout code
         uses: actions/checkout@v4
 
       - name: Get PR diff
-        run: |
-          gh pr diff ${{ github.event.pull_request.number }} > diff.txt
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh pr diff ${{ github.event.pull_request.number }} > diff.txt
 
-      - name: Review with Claude
+      - name: Send diff to Claude
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
         run: |
           RESPONSE=$(curl -s https://api.anthropic.com/v1/messages \
             -H "Content-Type: application/json" \
             -H "x-api-key: $ANTHROPIC_API_KEY" \
             -H "anthropic-version: 2023-06-01" \
-            -d '{
-              "model": "claude-3-sonnet-20240229",
-              "max_tokens": 700,
-              "messages": [{
-                "role": "user",
-                "content": "You are a senior backend engineer. Review this pull request for bugs, security issues, edge cases, and code quality problems. Be concise and actionable.\n\n'$(cat diff.txt)'"
+            -d "{
+              \"model\": \"claude-3-sonnet-20240229\",
+              \"max_tokens\": 700,
+              \"messages\": [{
+                \"role\": \"user\",
+                \"content\": \"You are a senior engineer. Review this PR diff. If there are no issues, say exactly: No significant issues found.\\n\\n$(sed 's/\"/\\\\\"/g' diff.txt)\"
               }]
-            }' | jq -r '.content[0].text')
+            }" | jq -r '.content[0].text // empty')
 
           echo "$RESPONSE" > review.txt
-        env:
-          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
 
-      - name: Comment on PR
-        run: |
-          if grep -q "[^[:space:]]" review.txt; then
-            gh pr comment ${{ github.event.pull_request.number }} --body-file review.txt
-          else
-            echo "No meaningful review content generated; skipping PR comment."
-          fi
+      - name: Comment on PR (safe)
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          CONTENT=$(sed '/^[[:space:]]*$/d' review.txt)
+
+          if [ -n "$CONTENT" ]; then
+            gh pr comment ${{ github.event.pull_request.number }} --body "$CONTENT"
+          else
+            echo "Claude returned empty output. Skipping PR comment."
+          fi
