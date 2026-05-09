@@ -1,4 +1,4 @@
-name: Claude AI PR Review
+name: AI + Quality PR Review
 
 on:
   pull_request:
@@ -9,39 +9,120 @@ permissions:
   contents: read
 
 jobs:
-  claude-review:
+  review:
     runs-on: ubuntu-latest
 
     steps:
+      # ✅ Checkout
       - name: Checkout code
         uses: actions/checkout@v4
 
+      # ✅ Setup Java (for your Spring Boot project)
+      - name: Setup Java 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+
+      # ✅ Cache Maven dependencies (faster builds)
+      - name: Cache Maven packages
+        uses: actions/cache@v4
+        with:
+          path: ~/.m2
+          key: maven-${{ runner.os }}-${{ hashFiles('**/pom.xml') }}
+          restore-keys: |
+            maven-${{ runner.os }}
+
+      # ✅ Build project (compile check)
+      - name: Build project
+        run: mvn clean compile -B
+
+      # ✅ Run tests
+      - name: Run unit tests
+        run: mvn test -B
+
+      # ✅ Static analysis (basic)
+      - name: Run Checkstyle
+        run: |
+          mvn checkstyle:check || true
+
+      # ✅ Get PR diff
       - name: Get PR diff
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           gh pr diff ${{ github.event.pull_request.number }} > diff.txt
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Send diff to Claude
+      # ✅ Get changed files list
+      - name: Get changed files
+        run: |
+          gh pr view ${{ github.event.pull_request.number }} --json files --jq '.files[].path' > files.txt
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      # ✅ Collect FULL FILE CONTENT (🔥 key improvement)
+      - name: Build full context
+        run: |
+          > context.txt
+          while read file; do
+            if [ -f "$file" ]; then
+              echo "FILE: $file" >> context.txt
+              echo "---------------------------------" >> context.txt
+              cat "$file" >> context.txt
+              echo -e "\n\n" >> context.txt
+            fi
+          done < files.txt
+
+      # ✅ Send to Claude (Deep Review)
+      - name: AI Deep Review
         env:
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
         run: |
+          DIFF=$(sed 's/\"/\\\\\"/g' diff.txt)
+          CONTEXT=$(sed 's/\"/\\\\\"/g' context.txt)
+
           RESPONSE=$(curl -s https://api.anthropic.com/v1/messages \
-            -H "Content-Type: application/json" \
-            -H "x-api-key: $ANTHROPIC_API_KEY" \
-            -H "anthropic-version: 2023-06-01" \
-            -d "{
-              \"model\": \"claude-3-sonnet-20240229\",
-              \"max_tokens\": 700,
-              \"messages\": [{
-                \"role\": \"user\",
-                \"content\": \"You are a senior engineer. Review this PR diff. If there are no issues, say exactly: No significant issues found.\\n\\n$(sed 's/\"/\\\\\"/g' diff.txt)\"
-              }]
-            }" | jq -r '.content[0].text // empty')
+          -H "Content-Type: application/json" \
+          -H "x-api-key: $ANTHROPIC_API_KEY" \
+          -H "anthropic-version: 2023-06-01" \
+          -d "{
+            \"model\": \"claude-3-sonnet-20240229\",
+            \"max_tokens\": 1200,
+            \"messages\": [{
+              \"role\": \"user\",
+              \"content\": \"You are a senior Java Spring Boot architect.
+
+Perform a deep code review.
+
+STRICT RULES:
+- Even if 1 line changed → review ENTIRE file
+- Check:
+  - Clean code
+  - SOLID principles
+  - Spring Boot best practices
+  - Exception handling
+  - Null safety
+  - Security risks
+  - Performance issues
+  - API design
+- Suggest improvements with examples
+
+If no issues, say exactly:
+No significant issues found.
+
+PR Diff:
+$DIFF
+
+Full Files:
+$CONTEXT
+\"
+            }]
+          }" | jq -r '.content[0].text // empty')
 
           echo "$RESPONSE" > review.txt
 
-      - name: Comment on PR (safe)
+      # ✅ Comment on PR
+      - name: Comment on PR
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
@@ -50,5 +131,13 @@ jobs:
           if [ -n "$CONTENT" ]; then
             gh pr comment ${{ github.event.pull_request.number }} --body "$CONTENT"
           else
-            echo "Claude returned empty output. Skipping PR comment."
+            echo "Empty response, skipping comment"
+          fi
+
+      # ✅ Optional: Fail PR if critical issues found
+      - name: Fail on critical issues
+        run: |
+          if grep -i "critical" review.txt; then
+            echo "Critical issues detected!"
+            exit 1
           fi
